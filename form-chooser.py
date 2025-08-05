@@ -1,16 +1,8 @@
 import os
-import importlib.util
-import sys
 
-# Import from form-downloader.py (handle hyphen in filename)
-spec = importlib.util.spec_from_file_location("form_downloader", "form-downloader.py")
-form_downloader = importlib.util.module_from_spec(spec)
-sys.modules["form_downloader"] = form_downloader
-spec.loader.exec_module(form_downloader)
-
-def get_existing_forms(folder_path="downloaded_forms"):
+def get_downloaded_forms_list(folder_path="downloaded_forms"):
     """
-    Get a list of all file names currently in the downloaded_forms folder.
+    Get a list of all file names in the downloaded_forms folder.
     
     Args:
         folder_path (str): Path to the folder containing the forms
@@ -41,7 +33,7 @@ def get_existing_forms(folder_path="downloaded_forms"):
     
     return form_names
 
-def display_forms(forms_list, title="Forms"):
+def display_forms(forms_list, title="Downloaded Forms"):
     """Display a numbered list of forms."""
     if forms_list:
         print(f"\n{title} ({len(forms_list)} files):")
@@ -50,54 +42,23 @@ def display_forms(forms_list, title="Forms"):
         for i, form_name in enumerate(forms_list, 1):
             print(f"{i:2d}. {form_name}")
         
-        print(f"\nPython list: {forms_list}")
+        print(f"\nPython list:")
+        print(forms_list)
     else:
         print(f"\nNo {title.lower()} found.")
 
 def main():
-    """Main function to demonstrate form management."""
-    print("FHDA Finance Forms Manager")
-    print("=" * 30)
+    """Main function to create and display the forms list."""
+    print("FHDA Finance Forms List Creator")
+    print("=" * 35)
     
-    # Option 1: Get forms from the downloaded_files list (from form-downloader.py)
-    downloaded_forms = form_downloader.get_downloaded_files()
-    display_forms(downloaded_forms, "Recently Downloaded Forms")
+    # Get all forms from the downloaded_forms folder and create a Python list
+    downloaded_forms_list = get_downloaded_forms_list()
     
-    # Option 2: Get forms from scanning the actual folder
-    existing_forms = get_existing_forms()
-    display_forms(existing_forms, "Forms in Folder")
+    # Display the results
+    display_forms(downloaded_forms_list)
     
-    # Show if there are any differences
-    if downloaded_forms and existing_forms:
-        if set(downloaded_forms) == set(existing_forms):
-            print("\n✅ Downloaded list matches folder contents!")
-        else:
-            print("\n⚠️  Downloaded list differs from folder contents:")
-            only_in_downloaded = set(downloaded_forms) - set(existing_forms)
-            only_in_folder = set(existing_forms) - set(downloaded_forms)
-            
-            if only_in_downloaded:
-                print(f"Only in downloaded list: {list(only_in_downloaded)}")
-            if only_in_folder:
-                print(f"Only in folder: {list(only_in_folder)}")
+    return downloaded_forms_list
 
-def demo_download():
-    """Demonstrate downloading forms and showing the list."""
-    print("FHDA Finance Forms Manager - Download Demo")
-    print("=" * 45)
-    
-    print("Downloading forms...")
-    downloaded_forms = form_downloader.download_forms()
-    
-    print(f"\n📋 Downloaded forms list from form-downloader.py:")
-    print(f"   {downloaded_forms}")
-    
-    # Now show both lists
-    existing_forms = get_existing_forms()
-    
-    if set(downloaded_forms) == set(existing_forms):
-        print("\n✅ Downloaded list matches folder contents!")
-    else:
-        print("\n⚠️  Downloaded list differs from folder contents")
-        
-    return downloaded_forms
+if __name__ == "__main__":
+    main()
