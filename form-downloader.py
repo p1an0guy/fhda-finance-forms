@@ -25,6 +25,7 @@ if response.status_code != 200:
 # Parse HTML
 soup = BeautifulSoup(response.text, "html.parser")
 pdf_links = []
+downloaded_files = []  # List to store names of successfully downloaded files
 
 # Find all <a> tags with .pdf hrefs
 for link in soup.find_all("a", href=True):
@@ -43,7 +44,13 @@ for link in soup.find_all("a", href=True):
             pdf_response = requests.get(pdf_url)
             with open(save_path, "wb") as f:
                 f.write(pdf_response.content)
+            downloaded_files.append(filename)  # Add to list after successful download
         except Exception as e:
             print(f"Failed to download {pdf_url}: {e}")
 
 print("✅ All PDFs downloaded with proper names.")
+print(f"\nSuccessfully downloaded {len(downloaded_files)} files:")
+for i, filename in enumerate(downloaded_files, 1):
+    print(f"{i:2d}. {filename}")
+
+print(f"\nList of downloaded files: {downloaded_files}")
