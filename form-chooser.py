@@ -156,36 +156,6 @@ def fallback_keyword_matching(user_input, forms_list, num_results=3):
     # If no keyword matches, return first few forms
     return forms_list[:num_results]
 
-# def display_forms(forms_list, title="Downloaded Forms"):
-#     """Display a numbered list of forms."""
-#     if forms_list:
-#         print(f"\n{title} ({len(forms_list)} files):")
-#         print("=" * (len(title) + 20))
-#         
-#         for i, form_name in enumerate(forms_list, 1):
-#             print(f"{i:2d}. {form_name}")
-#         
-#         print(f"\nPython list:")
-#         print(forms_list)
-#     else:
-#         print(f"\nNo {title.lower()} found.")
-
-# def main():
-#     """Main function to create and display the forms list."""
-#     print("FHDA Finance Forms List Creator")
-#     print("=" * 35)
-#     
-#     # Get all forms from the downloaded_forms folder and create a Python list
-#     downloaded_forms_list = get_downloaded_forms_list()
-#     
-#     # Display the results
-#     display_forms(downloaded_forms_list)
-#     
-#     return downloaded_forms_list
-
-# if __name__ == "__main__":
-#     main()
-
 user_input = input("What form do you need to fill out? Describe your request: ").strip()
 
 # Get the list of available forms
