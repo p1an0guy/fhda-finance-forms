@@ -174,9 +174,33 @@ else:
         print(f"\n✅ Based on your request, here are the top 3 most likely forms you need:")
         for i, form in enumerate(best_forms, 1):
             print(f"{i}. 📄 {form}")
+
+        # Validation loop for user choice
+        while True:
+            chosen_form = input("\nWhich form would you like to open? Enter the number (1-3): ").strip()
+            
+            if chosen_form in ['1', '2', '3']:
+                choice_index = int(chosen_form) - 1
+                if choice_index < len(best_forms):
+                    selected_form = best_forms[choice_index]
+                    break
+                else:
+                    print(f"❌ Invalid choice. Please enter a number between 1 and {len(best_forms)}.")
+            else:
+                print("❌ Invalid input. Please enter 1, 2, or 3.")
         
-        print(f"\nTop recommendation: {best_forms[0]}")
+        # Open the selected form
+        import subprocess
+        form_path = os.path.join("downloaded_forms", selected_form)
         
+        try:
+            print(f"\n🚀 Opening {selected_form}...")
+            subprocess.run(["open", form_path])  # On macOS
+            print(f"✅ Successfully opened {selected_form}")
+        except Exception as e:
+            print(f"❌ Error opening form: {e}")
+            print(f"Form location: {form_path}")
+
         # Optional: Open the top recommended form (you can uncomment this if you want to automatically open it)
         # import subprocess
         # form_path = os.path.join("downloaded_forms", best_forms[0])
