@@ -199,26 +199,28 @@ if __name__ == "__main__":
                 print(f"❌ Error: Form file not found at {form_path}")
             else:
                 print(f"\n🎯 Selected: {selected_form}")
+                subprocess.run(["open", form_path]) 
+                print(f"Successfully opened {selected_form}")
                 
                 # Import and use the form filler
-                try:
-                    from form_filler import process_form
-                    result = process_form(form_path)
+                # try:
+                #     from form_filler import process_form
+                #     result = process_form(form_path)
                     
-                    if result["success"]:
-                        print(f"\n✅ Form processing completed!")
-                        print(f"📋 Form type: {result['type']}")
-                        if result["field_count"] > 0:
-                            print(f"� Found {result['field_count']} fillable fields")
-                    else:
-                        print("❌ Form processing failed")
+                #     if result["success"]:
+                #         print(f"\n✅ Form processing completed!")
+                #         print(f"📋 Form type: {result['type']}")
+                #         if result["field_count"] > 0:
+                #             print(f"� Found {result['field_count']} fillable fields")
+                #     else:
+                #         print("❌ Form processing failed")
                         
-                except ImportError:
-                    print("⚠️  form-filler.py not found, opening directly...")
-                    subprocess.run(["open", form_path])  # On macOS
-                except Exception as e:
-                    print(f"❌ Error processing form: {e}")
-                    print("� Opening form directly instead...")
-                    subprocess.run(["open", form_path])  # On macOS
+                # except ImportError:
+                #     print("⚠️  form-filler.py not found, opening directly...")
+                #     subprocess.run(["open", form_path])  # On macOS
+                # except Exception as e:
+                #     print(f"❌ Error processing form: {e}")
+                #     print("� Opening form directly instead...")
+                #     subprocess.run(["open", form_path])  # On macOS
         else:
             print("❌ Could not determine the best forms for your request.")
