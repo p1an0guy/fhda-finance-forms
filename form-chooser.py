@@ -1,6 +1,7 @@
 import os
 import boto3
 import json
+import subprocess
 
 def get_downloaded_forms_list(folder_path="downloaded_forms"):
     """
@@ -34,6 +35,43 @@ def get_downloaded_forms_list(folder_path="downloaded_forms"):
         print(f"Error reading folder: {e}")
     
     return form_names
+
+def fallback_keyword_matching(user_input, forms_list, num_results=3):
+    """
+    Fallback method to find forms using simple keyword matching.
+    
+    Args:
+        user_input (str): User's request
+        forms_list (list): List of available forms
+        num_results (int): Number of results to return
+        
+    Returns:
+        list: Top matching forms
+    """
+    user_lower = user_input.lower()
+    scored_forms = []
+    
+    for form in forms_list:
+        score = 0
+        form_words = form.lower().replace('.pdf', '').replace('_', ' ').split()
+        
+        # Score based on word matches
+        for word in form_words:
+            if word in user_lower:
+                score += len(word)  # Longer matches get higher scores
+        
+        if score > 0:
+            scored_forms.append((score, form))
+    
+    # Sort by score (descending) and return top results
+    scored_forms.sort(reverse=True)
+    
+    # If we have scored results, return them
+    if scored_forms:
+        return [form for score, form in scored_forms[:num_results]]
+    
+    # If no keyword matches, return first few forms
+    return forms_list[:num_results]
 
 def find_best_form(user_input, forms_list):
     """
@@ -119,93 +157,55 @@ Form_Name_3.pdf"""
         
         return fallback_keyword_matching(user_input, forms_list, 3)
 
-def fallback_keyword_matching(user_input, forms_list, num_results=3):
-    """
-    Fallback method to find forms using simple keyword matching.
-    
-    Args:
-        user_input (str): User's request
-        forms_list (list): List of available forms
-        num_results (int): Number of results to return
-        
-    Returns:
-        list: Top matching forms
-    """
-    user_lower = user_input.lower()
-    scored_forms = []
-    
-    for form in forms_list:
-        score = 0
-        form_words = form.lower().replace('.pdf', '').replace('_', ' ').split()
-        
-        # Score based on word matches
-        for word in form_words:
-            if word in user_lower:
-                score += len(word)  # Longer matches get higher scores
-        
-        if score > 0:
-            scored_forms.append((score, form))
-    
-    # Sort by score (descending) and return top results
-    scored_forms.sort(reverse=True)
-    
-    # If we have scored results, return them
-    if scored_forms:
-        return [form for score, form in scored_forms[:num_results]]
-    
-    # If no keyword matches, return first few forms
-    return forms_list[:num_results]
+# Main script
+if __name__ == "__main__":
+    user_input = input("What form do you need to fill out? Describe your request: ").strip()
 
-user_input = input("What form do you need to fill out? Describe your request: ").strip()
+    # Get the list of available forms
+    forms_list = get_downloaded_forms_list()
 
-# Get the list of available forms
-forms_list = get_downloaded_forms_list()
-
-if not forms_list:
-    print("No forms found in the downloaded_forms folder. Please run form-downloader.py first.")
-else:
-    print(f"\nFound {len(forms_list)} available forms.")
-    print("Analyzing your request with Claude...")
-    
-    # Use Claude to find the top 3 matching forms
-    best_forms = find_best_form(user_input, forms_list)
-    
-    if best_forms:
-        print(f"\n✅ Based on your request, here are the top 3 most likely forms you need:")
-        for i, form in enumerate(best_forms, 1):
-            print(f"{i}. 📄 {form}")
-
-        # Validation loop for user choice
-        while True:
-            chosen_form = input("\nWhich form would you like to open? Enter the number (1-3): ").strip()
-            
-            if chosen_form in ['1', '2', '3']:
-                choice_index = int(chosen_form) - 1
-                if choice_index < len(best_forms):
-                    selected_form = best_forms[choice_index]
-                    break
-                else:
-                    print(f"❌ Invalid choice. Please enter a number between 1 and {len(best_forms)}.")
-            else:
-                print("❌ Invalid input. Please enter 1, 2, or 3.")
-        
-        # Open the selected form
-        import subprocess
-        form_path = os.path.join("downloaded_forms", selected_form)
-        
-        try:
-            print(f"\n🚀 Opening {selected_form}...")
-            subprocess.run(["open", form_path])  # On macOS
-            print(f"✅ Successfully opened {selected_form}")
-        except Exception as e:
-            print(f"❌ Error opening form: {e}")
-            print(f"Form location: {form_path}")
-
-        # Optional: Open the top recommended form (you can uncomment this if you want to automatically open it)
-        # import subprocess
-        # form_path = os.path.join("downloaded_forms", best_forms[0])
-        # subprocess.run(["open", form_path])  # On macOS
-        # print(f"Opening {best_forms[0]}...")
+    if not forms_list:
+        print("No forms found in the downloaded_forms folder. Please run form-downloader.py first.")
     else:
-        print("❌ Could not determine the best forms for your request.")
+        print(f"\nFound {len(forms_list)} available forms.")
+        print("Analyzing your request with Claude...")
+        
+        # Use Claude to find the top 3 matching forms
+        best_forms = find_best_form(user_input, forms_list)
+        
+        if best_forms:
+            print(f"\n✅ Based on your request, here are the top 3 most likely forms you need:")
+            for i, form in enumerate(best_forms, 1):
+                print(f"{i}. 📄 {form}")
 
+            # Validation loop for user choice
+            while True:
+                chosen_form = input("\nWhich form would you like to open? Enter the number (1-3): ").strip()
+                
+                if chosen_form in ['1', '2', '3']:
+                    choice_index = int(chosen_form) - 1
+                    if choice_index < len(best_forms):
+                        selected_form = best_forms[choice_index]
+                        break
+                    else:
+                        print(f"❌ Invalid choice. Please enter a number between 1 and {len(best_forms)}.")
+                else:
+                    print("❌ Invalid input. Please enter 1, 2, or 3.")
+            
+            # Open the selected form directly
+            form_path = os.path.join("downloaded_forms", selected_form)
+            
+            if not os.path.exists(form_path):
+                print(f"❌ Error: Form file not found at {form_path}")
+            else:
+                print(f"\n📄 Opening {selected_form}...")
+                try:
+                    subprocess.run(["open", form_path])  # On macOS
+                    print(f"✅ Successfully opened {selected_form}")
+                    print("💡 You can now fill out the form manually and save it when done.")
+                except Exception as e:
+                    print(f"❌ Error opening form: {e}")
+                    print(f"📁 Form location: {form_path}")
+                    print("💡 Try opening the file manually from the downloaded_forms folder.")
+        else:
+            print("❌ Could not determine the best forms for your request.")
