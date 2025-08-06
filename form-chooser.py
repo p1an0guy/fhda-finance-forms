@@ -192,20 +192,33 @@ if __name__ == "__main__":
                 else:
                     print("❌ Invalid input. Please enter 1, 2, or 3.")
             
-            # Open the selected form directly
+            # Process the selected form with form-filler
             form_path = os.path.join("downloaded_forms", selected_form)
             
             if not os.path.exists(form_path):
                 print(f"❌ Error: Form file not found at {form_path}")
             else:
-                print(f"\n📄 Opening {selected_form}...")
+                print(f"\n🎯 Selected: {selected_form}")
+                
+                # Import and use the form filler
                 try:
+                    from form_filler import process_form
+                    result = process_form(form_path)
+                    
+                    if result["success"]:
+                        print(f"\n✅ Form processing completed!")
+                        print(f"📋 Form type: {result['type']}")
+                        if result["field_count"] > 0:
+                            print(f"� Found {result['field_count']} fillable fields")
+                    else:
+                        print("❌ Form processing failed")
+                        
+                except ImportError:
+                    print("⚠️  form-filler.py not found, opening directly...")
                     subprocess.run(["open", form_path])  # On macOS
-                    print(f"✅ Successfully opened {selected_form}")
-                    print("💡 You can now fill out the form manually and save it when done.")
                 except Exception as e:
-                    print(f"❌ Error opening form: {e}")
-                    print(f"📁 Form location: {form_path}")
-                    print("💡 Try opening the file manually from the downloaded_forms folder.")
+                    print(f"❌ Error processing form: {e}")
+                    print("� Opening form directly instead...")
+                    subprocess.run(["open", form_path])  # On macOS
         else:
             print("❌ Could not determine the best forms for your request.")
