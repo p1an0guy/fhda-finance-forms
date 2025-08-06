@@ -5,9 +5,9 @@ from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
 # Target URL
-BASE_URL = "https://business.fhda.edu/finance-forms/"
-SAVE_DIR = "downloaded_forms"
-os.makedirs(SAVE_DIR, exist_ok=True)
+BASE_URL = "https://business.fhda.edu/finance-forms/" # where we are getting the PDFs from
+SAVE_DIR = "downloaded_forms"                         # creates a directory to save PDFs within parent directory
+os.makedirs(SAVE_DIR, exist_ok=True)                  # create directory if it doesn't exist
 
 # Helper: clean link text to make a safe filename
 def clean_filename(text):
@@ -28,9 +28,9 @@ soup = BeautifulSoup(response.text, "html.parser")
 # Find all <a> tags with .pdf hrefs
 for link in soup.find_all("a", href=True):
     href = link["href"]
-    if href.lower().endswith(".pdf"):
+    if href.lower().endswith(".pdf"):              # Check if link is a PDF - we only want PDFs
         pdf_url = urljoin(BASE_URL, href)
-        link_text = link.get_text(strip=True) or "document"
+        link_text = link.get_text(strip=True) or "document" # Use link text as filename if available, otherwise default to "document"
 
         # Clean and construct filename
         filename = clean_filename(link_text) + ".pdf"
